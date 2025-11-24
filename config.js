@@ -14,9 +14,10 @@ window.SUPABASE_CONFIG = {
     ENABLE_SUPABASE: true,
     
     // Supabase 项目 URL（例如：https://xxxxx.supabase.co）
-    URL: 'https://wecykyocyfyqgpgegecl.supabase.co',
+    URL: 'https://yungmjvdwqimgmgesthb.supabase.co',
     
     // Supabase API Key（使用 anon/public key）
-    API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlY3lreW9jeWZ5cWdwZ2VnZWNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzA2NDAsImV4cCI6MjA3OTU0NjY0MH0.LR90ZDWd5vo_4kTbigW7_YKyqqGmVfTPz8ySJrZjtoM'
+    API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmdtanZkd3FpbWdtZ2VzdGhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODc3MTMsImV4cCI6MjA3OTU2MzcxM30.OAs6IL70ofLtC4O4cl6H4RjuV6SvnSF_jxihm4ns1Y8'
 };
+
 
