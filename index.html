@@ -419,6 +419,7 @@
         <div class="management-buttons">
             <button id="init-btn" class="btn-warning">初始化库存</button>
             <button id="multi-use-btn" class="btn-danger">多条录入使用</button>
+            <button id="multi-add-btn" class="btn-success">多条录入补充</button>
             <button id="export-btn" class="btn-success">导出库存报告</button>
             <button id="import-btn" class="btn-success">导入库存数据</button>
             <button id="reset-btn" class="btn-danger">重置所有数据</button>
@@ -445,6 +446,24 @@
             </div>
             
             <div class="command-card">
+                <h3>补充物品</h3>
+                <div class="form-group">
+                    <label for="add-item-ids">物品编号（支持"/"分隔多个物品）</label>
+                    <textarea id="add-item-ids" placeholder="例如: A1/A2/A3&#10;或: A1-A5&#10;或: A系列"></textarea>
+                    <div class="input-hint">支持格式：单个编号(A1)、多个编号(A1/A2/A3)、范围(A1-A5)、系列(A系列)</div>
+                </div>
+                <div class="form-group">
+                    <label for="add-quantity">数量</label>
+                    <input type="number" id="add-quantity" placeholder="输入补充数量">
+                </div>
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="addAddExample()">添加示例</button>
+                    <button class="quick-action-btn" onclick="clearAddInput()">清空列表</button>
+                </div>
+                <button id="add-btn" class="btn-success" style="margin-top: 10px;">补充物品</button>
+            </div>
+            
+            <div class="command-card">
                 <h3>多条录入使用</h3>
                 <div class="form-group">
                     <label>批量录入（每行一个物品和数量）</label>
@@ -464,6 +483,28 @@
                     <button class="quick-action-btn" onclick="parseTextInput()">从文本导入</button>
                 </div>
                 <button id="batch-use-multi-btn" class="btn-danger" style="margin-top: 10px;">执行批量使用</button>
+            </div>
+            
+            <div class="command-card">
+                <h3>多条录入补充</h3>
+                <div class="form-group">
+                    <label>批量录入（每行一个物品和数量）</label>
+                    <div id="batch-add-container">
+                        <div class="batch-row">
+                            <input type="text" class="batch-item-input" placeholder="物品编号，如: A1">
+                            <input type="number" class="batch-quantity-input" placeholder="数量">
+                            <button class="remove-batch-btn" onclick="removeBatchAddRow(this)">×</button>
+                        </div>
+                    </div>
+                    <button class="add-batch-btn" onclick="addBatchAddRow()">+ 添加一行</button>
+                </div>
+                <div class="input-hint">格式：每行输入物品编号和数量，如：A1 20</div>
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="addBatchAddExample()">添加示例</button>
+                    <button class="quick-action-btn" onclick="clearBatchAddInput()">清空所有</button>
+                    <button class="quick-action-btn" onclick="parseAddTextInput()">从文本导入</button>
+                </div>
+                <button id="batch-add-multi-btn" class="btn-success" style="margin-top: 10px;">执行批量补充</button>
             </div>
             
             <div class="command-card">
@@ -1510,6 +1551,159 @@
             document.getElementById('use-quantity').value = '';
         }
         
+        // 添加补充示例
+        function addAddExample() {
+            document.getElementById('add-item-ids').value = "A1/A2/A3/A4/A5\nB1-B5\nC系列";
+            document.getElementById('add-quantity').value = "50";
+        }
+        
+        // 清空补充输入
+        function clearAddInput() {
+            document.getElementById('add-item-ids').value = '';
+            document.getElementById('add-quantity').value = '';
+        }
+        
+        // 添加批量补充行
+        function addBatchAddRow() {
+            const container = document.getElementById('batch-add-container');
+            const row = document.createElement('div');
+            row.className = 'batch-row';
+            row.innerHTML = `
+                <input type="text" class="batch-item-input" placeholder="物品编号，如: A1">
+                <input type="number" class="batch-quantity-input" placeholder="数量">
+                <button class="remove-batch-btn" onclick="removeBatchAddRow(this)">×</button>
+            `;
+            container.appendChild(row);
+        }
+        
+        // 移除批量补充行
+        function removeBatchAddRow(button) {
+            const row = button.parentElement;
+            if (document.querySelectorAll('#batch-add-container .batch-row').length > 1) {
+                row.remove();
+            }
+        }
+        
+        // 清空批量补充输入
+        function clearBatchAddInput() {
+            const container = document.getElementById('batch-add-container');
+            container.innerHTML = '';
+            addBatchAddRow(); // 添加一个空行
+        }
+        
+        // 添加批量补充示例
+        function addBatchAddExample() {
+            clearBatchAddInput();
+            const examples = [
+                { item: 'A1', quantity: 50 },
+                { item: 'A3', quantity: 100 },
+                { item: 'B5', quantity: 75 },
+                { item: 'C10', quantity: 120 }
+            ];
+            
+            const container = document.getElementById('batch-add-container');
+            container.innerHTML = '';
+            
+            examples.forEach(example => {
+                const row = document.createElement('div');
+                row.className = 'batch-row';
+                row.innerHTML = `
+                    <input type="text" class="batch-item-input" value="${example.item}">
+                    <input type="number" class="batch-quantity-input" value="${example.quantity}">
+                    <button class="remove-batch-btn" onclick="removeBatchAddRow(this)">×</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+        
+        // 从文本导入批量补充数据
+        function parseAddTextInput() {
+            const text = prompt(`请输入批量补充数据（每行一个物品）：\n格式：物品编号 数量\n示例：\nA1 50\nA3 100\nB5 75`);
+            
+            if (!text) return;
+            
+            clearBatchAddInput();
+            const container = document.getElementById('batch-add-container');
+            container.innerHTML = '';
+            
+            const lines = text.split('\n');
+            let validCount = 0;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                const parts = line.split(/\s+/);
+                if (parts.length >= 2) {
+                    const item = parts[0].toUpperCase();
+                    const quantity = parseInt(parts[1]);
+                    
+                    if (item && !isNaN(quantity)) {
+                        const row = document.createElement('div');
+                        row.className = 'batch-row';
+                        row.innerHTML = `
+                            <input type="text" class="batch-item-input" value="${item}">
+                            <input type="number" class="batch-quantity-input" value="${quantity}">
+                            <button class="remove-batch-btn" onclick="removeBatchAddRow(this)">×</button>
+                        `;
+                        container.appendChild(row);
+                        validCount++;
+                    }
+                }
+            });
+            
+            if (validCount === 0) {
+                addBatchAddRow();
+                outputToConsole("错误: 未找到有效的物品数据");
+            } else {
+                outputToConsole(`成功导入 ${validCount} 条物品补充记录`);
+            }
+        }
+        
+        // 执行批量补充
+        async function executeBatchAdd() {
+            const rows = document.querySelectorAll('#batch-add-container .batch-row');
+            const addList = [];
+            
+            // 收集所有有效的补充记录
+            rows.forEach(row => {
+                const itemInput = row.querySelector('.batch-item-input');
+                const quantityInput = row.querySelector('.batch-quantity-input');
+                
+                const item = itemInput.value.trim().toUpperCase();
+                const quantity = parseInt(quantityInput.value);
+                
+                if (item && !isNaN(quantity) && quantity > 0) {
+                    addList.push({ item, quantity });
+                }
+            });
+            
+            if (addList.length === 0) {
+                outputToConsole("错误: 请输入有效的物品补充记录");
+                return;
+            }
+            
+            let successCount = 0;
+            let failCount = 0;
+            let output = "开始执行批量补充:\n\n";
+            
+            // 执行补充操作
+            addList.forEach(({ item, quantity }) => {
+                const result = addItem(item, quantity, false);
+                output += result.message + '\n';
+                
+                if (result.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            });
+            
+            await saveInventory();
+            output += `\n批量补充完成！成功: ${successCount} 个，失败: ${failCount} 个`;
+            outputToConsole(output);
+        }
+        
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
             // 加载 Supabase 配置（从 config.js 文件读取）
@@ -1529,6 +1723,19 @@
                 }
                 
                 await batchUseItems(itemIdsInput, quantity);
+            });
+            
+            // 补充物品按钮
+            document.getElementById('add-btn').addEventListener('click', async function() {
+                const itemIdsInput = document.getElementById('add-item-ids').value.trim();
+                const quantity = parseInt(document.getElementById('add-quantity').value);
+                
+                if (!itemIdsInput || isNaN(quantity) || quantity <= 0) {
+                    outputToConsole('错误: 请输入有效的物品编号和数量');
+                    return;
+                }
+                
+                await batchAddItems(itemIdsInput, quantity);
             });
             
             // 查询单个物品按钮
@@ -1572,9 +1779,27 @@
             // 批量使用按钮
             document.getElementById('batch-use-multi-btn').addEventListener('click', executeBatchUse);
             
+            // 批量补充按钮
+            document.getElementById('batch-add-multi-btn').addEventListener('click', executeBatchAdd);
+            
             // 多条录入使用按钮
             document.getElementById('multi-use-btn').addEventListener('click', function() {
                 document.querySelector('.command-card:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // 多条录入补充按钮
+            document.getElementById('multi-add-btn').addEventListener('click', function() {
+                // 假设多条录入补充的command-card在页面中，我们需要找到它
+                const batchAddSection = document.getElementById('batch-add-section');
+                if (batchAddSection) {
+                    batchAddSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    // 作为备选，滚动到补充物品区域
+                    const addCard = document.querySelector('.command-card:has(h3:contains("补充物品"))');
+                    if (addCard) {
+                        addCard.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
             });
             
             // 导出报告按钮
@@ -1609,6 +1834,7 @@
             
             // 添加初始批量输入行
             addBatchRow();
+            addBatchAddRow();
         });
     </script>
 </body>
